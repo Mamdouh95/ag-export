@@ -4,29 +4,19 @@ Queued spreadsheet exports for Laravel. Wraps `maatwebsite/excel` with an
 `ExportJob` tracking row and a Livewire status UI so requests don't time out
 on heavy reports.
 
-## Install (path repository)
-
-In the host app's `composer.json`:
-
-```json
-{
-  "repositories": [
-    { "type": "path", "url": "../packages/agriserv/exports" }
-  ],
-  "require": {
-    "agriserv/exports": "*"
-  }
-}
-```
-
-Then:
+## Install
 
 ```bash
-composer require agriserv/exports:*
+composer require agriserv/exports
 php artisan vendor:publish --tag=exports-config        # optional
 php artisan vendor:publish --tag=exports-migrations    # optional
 php artisan migrate
 ```
+
+The service provider and `QueuedExports` facade are auto-discovered.
+
+Requires PHP ^8.2, Laravel 10/11/12, `maatwebsite/excel` ^3.1, and
+`livewire/livewire` ^3.0.
 
 ## Configure (env)
 
@@ -98,10 +88,10 @@ Schedule::command('exports:prune')->dailyAt('03:00');
 
 ## Notes on existing exports
 
-The existing export classes in `ratings`, `invoices`, and `appointments`
-don't need changes — they're already plain Maatwebsite exports. The only
-caveat for queueing: the export instance is serialized onto the queue,
-so its constructor properties (Eloquent Builders, Collections) must be
+Your existing Maatwebsite export classes work as-is — pass them through
+`QueuedExports::queue()` instead of `Excel::download()`. The only caveat
+for queueing: the export instance is serialized onto the queue, so its
+constructor properties (Eloquent Builders, Collections) must be
 serializable. **Don't put closures inside the query** — rebuild the
 query from saved filters inside the export class instead.
 
