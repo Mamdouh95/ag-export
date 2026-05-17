@@ -4,6 +4,7 @@ namespace Agriserv\Exports\Console;
 
 use Agriserv\Exports\Models\ExportJob;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Schema;
 
 class PruneExportsCommand extends Command
 {
@@ -15,6 +16,12 @@ class PruneExportsCommand extends Command
 
     public function handle(): int
     {
+        $table = config('exports.table', 'export_jobs');
+        if (!Schema::hasTable($table)) {
+            $this->warn("Table \"{$table}\" does not exist. Run `php artisan migrate` before pruning.");
+            return self::SUCCESS;
+        }
+
         $days = (int) ($this->option('days') ?? config('exports.retention_days', 7));
         $dry  = (bool) $this->option('dry-run');
 
