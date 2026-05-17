@@ -19,6 +19,7 @@ class ProcessExportJob implements ShouldQueue
     public function __construct(
         public string $exportJobId,
         public object $export,
+        public ?string $writerType = null,
     ) {
     }
 
@@ -56,7 +57,7 @@ class ProcessExportJob implements ShouldQueue
         $relative = ($basePath !== '' ? $basePath . '/' : '') . $record->id . '/' . $record->filename;
 
         try {
-            Excel::store($this->export, $relative, $disk);
+            Excel::store($this->export, $relative, $disk, $this->writerType);
 
             $size = null;
             try {

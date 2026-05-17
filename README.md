@@ -56,12 +56,21 @@ public function export()
             'label' => 'تصدير الفواتير',
             // 'user' => auth()->user(),   // defaults to auth()->user()
             // 'disk' => 's3',             // override default disk
+            // 'format' => 'xlsx',         // xlsx (default) | csv | tsv | ods | html
         ],
     );
 
     return back()->with('status', "تم إضافة طلب التصدير إلى الطابور (#{$job->id}).");
 }
 ```
+
+### Picking a format
+
+| Format | When to use |
+|---|---|
+| `xlsx` (default) | Most cases. Supports styling, RTL events, multi-sheet. Whole workbook held in RAM until save — heavy on large datasets. |
+| `csv` | **Large datasets (50k+ rows).** Streams cell-by-cell, memory stays flat regardless of row count. No styling. For Arabic, the export class should use `WithCustomCsvSettings` returning `['use_bom' => true]` so Excel renders UTF-8 correctly. |
+| `tsv` / `ods` / `html` | Niche; same streaming/styling trade-offs as csv. |
 
 The user sees their export appear in the status component:
 
