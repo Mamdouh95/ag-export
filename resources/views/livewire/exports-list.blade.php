@@ -27,6 +27,7 @@
                 @php
                     $meta = $statusMeta[$export->status] ?? ['label' => $export->status, 'class' => 'bg-gray-100 text-gray-700'];
                     $size = $export->file_size ? number_format($export->file_size / 1024, 1) . ' KB' : null;
+                    $rows = $export->total_rows ? number_format($export->total_rows) . ' صف' : null;
                 @endphp
                 <li class="px-4 py-3 hover:bg-gray-50" wire:key="export-{{ $export->id }}">
                     <div class="flex items-start justify-between gap-3">
@@ -39,6 +40,10 @@
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full font-medium {{ $meta['class'] }}">
                                     {{ $meta['label'] }}
                                 </span>
+                                @if($rows)
+                                    <span aria-hidden="true">•</span>
+                                    <span>{{ $rows }}</span>
+                                @endif
                                 @if($size)
                                     <span aria-hidden="true">•</span>
                                     <span>{{ $size }}</span>

@@ -43,6 +43,28 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Streaming writer
+    |--------------------------------------------------------------------------
+    | Applies to exports implementing Agriserv\Exports\Contracts\ShouldStream,
+    | which are written row-by-row with OpenSpout instead of being assembled in
+    | memory by PhpSpreadsheet.
+    |
+    | chunk_size    Rows fetched per DB round trip during the keyset walk.
+    | right_to_left RTL sheet direction for xlsx (Arabic reports).
+    | date_format   Excel number format for real date/time cells. Without one,
+    |               Excel renders the raw serial (45678.5) instead of a date.
+    | temp_folder   Where OpenSpout buffers sheet parts before zipping. Point at
+    |               a roomy volume if /tmp is small; null uses the system temp.
+    */
+    'stream' => [
+        'chunk_size'    => (int) env('EXPORTS_STREAM_CHUNK', 1000),
+        'right_to_left' => (bool) env('EXPORTS_STREAM_RTL', true),
+        'date_format'   => env('EXPORTS_STREAM_DATE_FORMAT', 'yyyy-mm-dd hh:mm'),
+        'temp_folder'   => env('EXPORTS_STREAM_TEMP'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Download routes
     |--------------------------------------------------------------------------
     | Where the download endpoint mounts and which middleware guards it.

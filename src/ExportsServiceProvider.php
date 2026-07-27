@@ -5,6 +5,7 @@ namespace Agriserv\Exports;
 use Agriserv\Exports\Console\PruneExportsCommand;
 use Agriserv\Exports\Livewire\ExportsList;
 use Agriserv\Exports\Support\QueuedExports;
+use Agriserv\Exports\Support\StreamingExportWriter;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 
@@ -15,6 +16,8 @@ class ExportsServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/Config/exports.php', 'exports');
 
         $this->app->singleton('agriserv.exports', fn () => new QueuedExports());
+
+        $this->app->singleton(StreamingExportWriter::class);
     }
 
     public function boot(): void

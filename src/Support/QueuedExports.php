@@ -2,6 +2,7 @@
 
 namespace Agriserv\Exports\Support;
 
+use Agriserv\Exports\Contracts\ShouldStream;
 use Agriserv\Exports\Jobs\ProcessExportJob;
 use Agriserv\Exports\Models\ExportJob;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -36,6 +37,16 @@ class QueuedExports
             ? $this->resolveWriterType($options['format'])
             : null;
 
+        // Keep the plain format string too: the streaming writer builds its own
+        // writer and has no use for maatwebsite's writer-type constants.
+        $format = strtolower((string) ($options['format']
+            ?? pathinfo($filename, PATHINFO_EXTENSION)
+            ?: 'xlsx'));
+
+        if ($export instanceof ShouldStream) {
+            $this->assertStreamableFormat($export, $format);
+        }
+
         $retention = (int) config('exports.retention_days', 7);
         $expiresAt = $options['expires_at']
             ?? ($retention > 0 ? now()->addDays($retention) : null);
@@ -52,13 +63,29 @@ class QueuedExports
 
         $cfg = config('exports.queue', []);
 
-        $job = (new ProcessExportJob($record->id, $export, $writerType))
+        $job = (new ProcessExportJob($record->id, $export, $writerType, $format))
             ->onConnection($cfg['connection'] ?? null)
             ->onQueue($cfg['queue'] ?? 'exports');
 
         dispatch($job);
 
         return $record;
+    }
+
+    /**
+     * Fail at dispatch time rather than inside the worker, so a bad format
+     * surfaces to whoever clicked the button.
+     */
+    private function assertStreamableFormat(object $export, string $format): void
+    {
+        if (!in_array($format, ['xlsx', 'csv', 'ods'], true)) {
+            throw new InvalidArgumentException(sprintf(
+                '%s implements ShouldStream, which supports xlsx, csv and ods — got "%s". '
+                . 'Drop ShouldStream to use the maatwebsite writer instead.',
+                $export::class,
+                $format
+            ));
+        }
     }
 
     private function resolveWriterType(string $format): string

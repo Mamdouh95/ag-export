@@ -2,7 +2,9 @@
 
 namespace Agriserv\Exports\Jobs;
 
+use Agriserv\Exports\Contracts\ShouldStream;
 use Agriserv\Exports\Models\ExportJob;
+use Agriserv\Exports\Support\StreamingExportWriter;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -20,6 +22,7 @@ class ProcessExportJob implements ShouldQueue
         public string $exportJobId,
         public object $export,
         public ?string $writerType = null,
+        public ?string $format = null,
     ) {
     }
 
@@ -57,7 +60,14 @@ class ProcessExportJob implements ShouldQueue
         $relative = ($basePath !== '' ? $basePath . '/' : '') . $record->id . '/' . $record->filename;
 
         try {
-            Excel::store($this->export, $relative, $disk, $this->writerType);
+            $totalRows = $this->export instanceof ShouldStream
+                ? app(StreamingExportWriter::class)->write(
+                    $this->export,
+                    $relative,
+                    $disk,
+                    $this->format ?? $this->formatFromFilename($record->filename),
+                )
+                : $this->storeWithMaatwebsite($relative, $disk);
 
             $size = null;
             try {
@@ -66,7 +76,7 @@ class ProcessExportJob implements ShouldQueue
                 // size lookup is best-effort
             }
 
-            $record->markCompleted($relative, $size);
+            $record->markCompleted($relative, $size, $totalRows);
         } catch (Throwable $e) {
             $record->markFailed($e->getMessage());
             throw $e; // let the queue retry per config
@@ -79,5 +89,21 @@ class ProcessExportJob implements ShouldQueue
         if ($record && !$record->isCompleted()) {
             $record->markFailed($e->getMessage());
         }
+    }
+
+    /**
+     * The maatwebsite path holds the whole worksheet in memory and exposes no
+     * cheap row count, so there is nothing to report back for it.
+     */
+    private function storeWithMaatwebsite(string $relative, string $disk): ?int
+    {
+        Excel::store($this->export, $relative, $disk, $this->writerType);
+
+        return null;
+    }
+
+    private function formatFromFilename(string $filename): string
+    {
+        return strtolower(pathinfo($filename, PATHINFO_EXTENSION)) ?: 'xlsx';
     }
 }
