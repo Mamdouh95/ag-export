@@ -1,19 +1,21 @@
 {
     "name": "agriserv/exports",
-    "description": "Queued spreadsheet exports for Laravel apps. Wraps maatwebsite/excel with a tracked ExportJob + Livewire status UI.",
+    "description": "Queued spreadsheet exports for Laravel apps. Wraps maatwebsite/excel with a tracked ExportJob + Livewire or Vue status UI.",
     "type": "library",
     "license": "proprietary",
     "require": {
         "php": "^8.2",
-        "illuminate/support": "^10.0|^11.0|^12.0",
-        "illuminate/database": "^10.0|^11.0|^12.0",
-        "illuminate/queue": "^10.0|^11.0|^12.0",
-        "illuminate/bus": "^10.0|^11.0|^12.0",
-        "illuminate/console": "^10.0|^11.0|^12.0",
-        "illuminate/http": "^10.0|^11.0|^12.0",
+        "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/database": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/queue": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/bus": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/console": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/http": "^10.0|^11.0|^12.0|^13.0",
         "maatwebsite/excel": "^3.1",
-        "livewire/livewire": "^3.0",
         "openspout/openspout": "^4.28"
+    },
+    "suggest": {
+        "livewire/livewire": "^3.0 — for the <livewire:exports.list /> status component (Vue apps use the published ExportsList.vue instead)"
     },
     "autoload": {
         "psr-4": {

@@ -43,6 +43,10 @@ class ExportsServiceProvider extends ServiceProvider
                 __DIR__ . '/../resources/views' => resource_path('views/vendor/exports'),
             ], 'exports-views');
 
+            $this->publishes([
+                __DIR__ . '/../resources/js' => resource_path('js/vendor/exports'),
+            ], 'exports-vue');
+
             $this->commands([
                 PruneExportsCommand::class,
             ]);

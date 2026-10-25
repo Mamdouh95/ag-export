@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.5.0
+
+Makes the package usable from Vue / Inertia apps and Laravel 13.
+
+### Added
+
+- **JSON status endpoints**: `GET {prefix}/jobs` and `DELETE {prefix}/jobs/{id}`
+  (`Http\Controllers\ExportsController`), scoped to the signed-in user. Toggle
+  with the new `exports.routes.api` config key (default `true`).
+- **`ExportJob::toListItem()`**, the row shape both endpoints return.
+- **`ExportsList.vue`**, a Vue 3 port of the Livewire list, published with
+  `vendor:publish --tag=exports-vue`. Polls while exports are active and
+  refreshes on a `exports:refresh` window event.
+
+### Changed
+
+- Laravel 13 (`illuminate/*` `^13.0`) is now allowed.
+- `livewire/livewire` moved from `require` to `suggest`. The Livewire component
+  is still registered whenever Livewire is installed, so existing apps keep
+  working unchanged — they already require Livewire themselves.
+
 ## v0.4.0
 
 Adds a streaming writer so large exports stop being bounded by worker memory,

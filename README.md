@@ -1,8 +1,8 @@
 # agriserv/exports
 
 Queued spreadsheet exports for Laravel. Wraps `maatwebsite/excel` with an
-`ExportJob` tracking row and a Livewire status UI so requests don't time out
-on heavy reports.
+`ExportJob` tracking row and a Livewire or Vue status UI so requests don't
+time out on heavy reports.
 
 ## Install
 
@@ -15,8 +15,8 @@ php artisan migrate
 
 The service provider and `QueuedExports` facade are auto-discovered.
 
-Requires PHP ^8.2, Laravel 10/11/12, `maatwebsite/excel` ^3.1, and
-`livewire/livewire` ^3.0.
+Requires PHP ^8.2, Laravel 10–13 and `maatwebsite/excel` ^3.1. The status UI
+needs either `livewire/livewire` ^3.0 or Vue 3 (see "Status UI").
 
 ## Configure (env)
 
@@ -152,6 +152,37 @@ The user sees their export appear in the status component:
 
 The component polls every 4s while any export is pending/processing,
 then shows a download button (signed URL, 30 min) when complete.
+
+### Vue / Inertia apps
+
+Livewire is optional. Without it, publish the Vue twin of the component:
+
+```bash
+php artisan vendor:publish --tag=exports-vue   # → resources/js/vendor/exports/ExportsList.vue
+```
+
+```vue
+<script setup>
+import ExportsList from '@/vendor/exports/ExportsList.vue';
+</script>
+
+<template>
+    <ExportsList />
+</template>
+```
+
+It talks to two JSON endpoints mounted next to the download route (turn them
+off with `routes.api => false`), both scoped to the signed-in user:
+
+| Method | Path | |
+|---|---|---|
+| `GET` | `/exports/jobs?limit=15` | `{ data: [...], has_active: bool }` |
+| `DELETE` | `/exports/jobs/{id}` | deletes the row and its file |
+
+Put the app's auth on them through `routes.middleware`, e.g.
+`['web', 'sso_auth']`. After queueing an export from an Inertia action, fire
+`window.dispatchEvent(new Event('exports:refresh'))` in `onSuccess` so the
+list picks it up without waiting for a poll.
 
 ## Pruning
 

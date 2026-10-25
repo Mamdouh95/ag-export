@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 
 /**
  * @property string $id
@@ -109,6 +110,27 @@ class ExportJob extends Model
             now()->addMinutes($minutes),
             ['exportJob' => $this->id]
         );
+    }
+
+    /**
+     * The shape the JSON status endpoint returns for one row. Mirrors what the
+     * Livewire list renders, so both UIs show the same thing.
+     */
+    public function toListItem(): array
+    {
+        return [
+            'id'                => $this->id,
+            'label'             => $this->label ?: $this->filename,
+            'filename'          => $this->filename,
+            'status'            => $this->status,
+            'finished'          => $this->isFinished(),
+            'total_rows'        => $this->total_rows,
+            'file_size'         => $this->file_size,
+            'error'             => $this->isFailed() && $this->error ? Str::limit($this->error, 120) : null,
+            'created_at'        => $this->created_at?->toIso8601String(),
+            'created_at_human'  => $this->created_at?->diffForHumans(),
+            'download_url'      => $this->downloadUrl(),
+        ];
     }
 
     public function scopeForUser($q, $user)

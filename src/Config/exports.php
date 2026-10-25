@@ -70,9 +70,14 @@ return [
     | Where the download endpoint mounts and which middleware guards it.
     | The route uses signed URLs so middleware only needs to apply the
     | application's normal auth (e.g. web, sso_auth).
+    |
+    | api  Mounts GET {prefix}/jobs and DELETE {prefix}/jobs/{id}, the JSON
+    |      endpoints behind the published ExportsList.vue. They only ever
+    |      return the signed-in user's own exports.
     */
     'routes' => [
         'enabled'    => true,
+        'api'        => true,
         'prefix'     => env('EXPORTS_ROUTE_PREFIX', 'exports'),
         'middleware' => ['web'],
         'name'       => 'exports.',
